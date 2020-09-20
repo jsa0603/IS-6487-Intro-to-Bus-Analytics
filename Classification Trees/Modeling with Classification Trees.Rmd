@@ -1,5 +1,5 @@
 ---
-title: 'Project Modeling with Classification Trees'
+title: 'Modeling with Classification Trees'
 author: "Joshua Ambrose"
 date: "9/19/2020"
 output:
