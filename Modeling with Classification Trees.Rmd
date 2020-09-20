@@ -1,0 +1,80 @@
+---
+title: 'Project Modeling with Classification Trees'
+author: "Joshua Ambrose"
+date: "9/19/2020"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rpart)
+library(rpart.plot)
+```
+
+### Summary
+Summary of the data used for this project. PRODUCT is removed as a predictor for this project since it records an event that takes place after the outcome. ANSWERED, FEMALE, JOB, RENT, OWN_RES, NEW_CAR, MOBILE were converted to factors.
+```{r cleaned, echo=FALSE}
+data_unclean <- read.csv("C:/Users/joshua.ambrose/Downloads/adviseinvest_clean.csv")
+data <- data_unclean
+drop <- c("product")
+data <- data[ , !(names(data) %in% drop)]
+
+data$answered <- factor(data$answered)
+data$female <- factor(data$female)
+data$job <- factor(data$job)
+data$rent <- factor(data$rent)
+data$own_res <- factor(data$own_res)
+data$mobile <- factor(data$mobile)
+summary(data)
+```
+### Proportion of Answered Calls
+This is the proportion of answered calls for question one. Since the data is binary where 0 indicates unanswered and 1 indicates answered, the mean is the average of answered calls.
+```{r proportion, echo=T}
+summary(data_unclean$answered)
+```
+### Income Model
+The below defined income model has an accuracy of 0.648.
+
+```{r income model, echo=T}
+income_model <- rpart(answered ~ income, data = data)
+rpart.plot(income_model)
+
+(predict(income_model, type = "class") == data$answered) %>% 
+  mean
+```
+
+### Information Gain
+IG(parent,children)=entropy(parent)−[p(c1)entropy(c1)+p(c2)entropy(c2)+...]
+
+The calculations used to get IG, and IG itself, are shown below:
+
+```{r information gain, echo=T}
+income_model
+
+entropy_parent <- -0.4570000 * log2(0.4570000) - 0.5430000 * log2(0.5430000)
+print(entropy_parent)
+pc1 <- 1385/5000
+print(pc1)
+pc2 = 1 - pc1
+print(pc2)
+entropyc1 = -0.3574007 * log2(0.3574007) - 0.6425993 * log2(0.6425993)
+print(entropyc1)
+entropyc2 = -0.3858921  * log2(0.3858921 ) - 0.6141079 * log2(0.6141079)
+print(entropyc2)
+
+IG <- entropy_parent - (pc1 * entropyc1 + pc2 * entropyc2)
+print(IG)
+
+```
+### Tree Model
+The below defined tree model has an accuracy of 0.8104.
+
+```{r tree model, echo=T}
+tree_model <- rpart(answered ~ ., data = data)
+rpart.plot(tree_model)
+
+(predict(tree_model, type = "class") == data$answered) %>% 
+  mean
+```
